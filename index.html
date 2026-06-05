@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Open Storehouse Forge (Pro - Enterprise Sovereign Edition)</title>
+    <style>
+        :root {
+            --bg-main: #0d1117;
+            --bg-card: #161b22;
+            --border: #30363d;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #238636;
+            --accent-hover: #2ea043;
+            --link: #58a6ff;
+            --danger: #da3633;
+            --warning: #d29922;
+            --diff-add: rgba(46, 160, 67, 0.15);
+            --diff-add-text: #3fb950;
+            --diff-remove: rgba(248, 81, 73, 0.15);
+            --diff-remove-text: #f85149;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        h1, h2, h3, h4 { color: #f0f6fc; margin-top: 0; }
+        p { color: var(--text-muted); }
+
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: 1px solid rgba(240,246,252,0.1);
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: background 0.1s;
+        }
+        .btn:hover { background-color: var(--accent-hover); }
+        .btn-secondary { background-color: #21262d; border-color: var(--border); color: var(--link); padding: 6px 14px; border-radius: 6px; cursor: pointer; }
+        .btn-secondary:hover { background-color: #30363d; }
+        .btn-danger { background-color: #21262d; border-color: var(--border); color: var(--danger); padding: 6px 14px; border-radius: 6px; cursor: pointer; }
+        .btn-danger:hover { background-color: var(--danger); color: white; }
+
+        .header-actions { display: flex; gap: 10px; }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+        }
+
+        .sidebar, .main-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        .repo-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            border: 1px solid transparent;
+        }
+        .repo-item:hover { background: #21262d; }
+        .repo-item.active { background: #1f6feb; border-color: #388bfd; color: white; }
+        .repo-item.active .repo-meta { color: #e6edf3; }
+
+        .repo-meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+        /* Multi-File Tree Styling */
+        .file-tree {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 16px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .file-tree-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+        .file-item {
+            padding: 6px 10px;
+            font-family: monospace;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-item:hover { background: #30363d; }
+        .file-item.active { background: #21262d; color: var(--link); border-left: 3px solid var(--link); }
+
+        /* Branching Strip */
+        .branch-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #1f242c;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+        select.branch-select {
+            background: var(--bg-main);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .editor-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .file-editor textarea {
+            width: 100%;
+            height: 300px;
+            background: var(--bg-main);
+            color: #79c0ff;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            padding: 12px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        .commit-box {
+            background: #1f242c;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 16px;
+        }
+        .commit-box input {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 6px;
+            width: 70%;
+            margin-right: 8px;
+        }
+
+        /* Diff Engine Panels */
+        .diff-viewer {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 16px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .diff-line { padding: 2px 4px; border-radius: 2px; }
+        .diff-line.add { background: var(--diff-add); color: var(--diff-add-text); }
+        .diff-line.remove { background: var(--diff-remove); color: var(--diff-remove-text); }
+
+        .timeline {
+            margin-top: 24px;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        .timeline-item::before {
+            content: ""; position: absolute; left: 6px; top: 5px; width: 8px; height: 8px; background: var(--link); border-radius: 50%;
+        }
+
+        .vault-box, .network-box {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+        }
+
+        #importFile { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>The Open Storehouse Forge <span style="font-size:14px; color:var(--warning);">v1 Sovereign Engine</span></h1>
+            <p>Decentralized multi-file architectural mesh Network. Free from centralized lock-ins.</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn" onclick="showNewRepoModal()">🛠 Forge Blueprint Repository</button>
+        </div>
+    </header>
+
+    <div class="layout">
+        <div class="sidebar">
+            <h3>Blueprints (Repos)</h3>
+            <div id="repoList"></div>
+
+            <div class="network-box">
+                <h4>Sovereign Mesh Network</h4>
+                <p style="font-size:11px;">Simulate synchronization with remote peer nodes across the collective.</p>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <input type="text" id="peerAddress" placeholder="ipfs://peer-hash-7a2x..." style="background:var(--bg-main); border:1px solid var(--border); padding:4px; color:white; border-radius:4px; font-size:12px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                        <button class="btn-secondary" style="font-size:12px; padding:4px;" onclick="simulateNetworkAction('Pull')">↓ Mesh Pull</button>
+                        <button class="btn-secondary" style="font-size:12px; padding:4px;" onclick="simulateNetworkAction('Push')">↑ Mesh Push</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vault-box">
+                <h4>Cold-Storage Vault</h4>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button class="btn-secondary" style="font-size:12px;" onclick="exportBackup()">Export Ledger JSON</button>
+                    <button class="btn-secondary" style="font-size:12px;" onclick="document.getElementById('importFile').click()">Import Ledger JSON</button>
+                    <input type="file" id="importFile" accept=".json" onchange="importBackup(event)">
+                </div>
+            </div>
+        </div>
+
+        <div class="main-panel" id="workspace" style="display:none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h2 id="activeRepoTitle" style="margin-bottom:4px;">Blueprint Name</h2>
+                    <p id="activeRepoDesc" style="font-size:13px;"></p>
+                </div>
+                <button class="btn-danger" style="font-size:12px; padding:4px 8px;" onclick="deleteActiveRepo()">Scrap Repository</button>
+            </div>
+
+            <div class="branch-bar">
+                <strong>Active Timeline Track:</strong>
+                <select id="branchSelect" class="branch-select" onchange="switchBranch()"></select>
+                <button class="btn-secondary" style="padding:2px 8px; font-size:12px;" onclick="createNewBranch()">+ Fork Track</button>
+                <button class="btn-secondary" style="padding:2px 8px; font-size:12px; color:var(--warning); border-color:var(--warning);" onclick="mergeBranchIntoCurrent()">⎔ Merge Track Into Active</button>
+            </div>
+
+            <div class="editor-container">
+                <div>
+                    <div class="file-tree-header">
+                        <span>🗂 BLUEPRINT COMPONENT TREE</span>
+                        <button class="btn-secondary" style="padding:2px 6px; font-size:11px;" onclick="addNewFileToRepo()">+ Add Document</button>
+                    </div>
+                    <div id="fileTree" class="file-tree"></div>
+
+                    <div class="file-editor">
+                        <h3 id="currentEditingFileName" style="font-size:14px; font-family:monospace; color:var(--link);">file.txt</h3>
+                        <textarea id="fileContent" oninput="updateUncommittedChangesLive()"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div id="diffSection">
+                <h4 style="margin-bottom:6px; font-size:13px; color:var(--text-muted);">Uncommitted Manifest Changes (Vs Last Snapshot Head)</h4>
+                <div id="diffViewer" class="diff-viewer">No adjustments tracked on the anvil.</div>
+            </div>
+
+            <div class="commit-box">
+                <h4>Forge Snapshot Node (Commit)</h4>
+                <input type="text" id="commitMessage" placeholder="Document changes to this architecture...">
+                <button class="btn" onclick="handleCommit()">Commit changes</button>
+            </div>
+
+            <div class="timeline">
+                <h3>Chronicle of Craftsmanship (Commit Ledger)</h3>
+                <div id="commitHistory"></div>
+            </div>
+        </div>
+
+        <div class="main-panel" id="welcomeView" style="text-align: center; padding: 60px 20px;">
+            <h2>The Autonomous Crafting Vault</h2>
+            <p>Select a decentralized blueprint workspace from the ledger array or setup an isolated repository grid workspace.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Robust multi-file setup with full branch support
+    const seedData = {
+        activeRepoId: "1001",
+        repos: [
+            {
+                id: "1001",
+                name: "bakers-oven-v4",
+                description: "Eldrin's optimized masonry oven plans maximizing thermal mechanics without relying on Corporate Oracle resources.",
+                activeBranch: "main",
+                branches: {
+                    "main": {
+                        files: {
+                            "readme.md": "# Baker's Oven Specifications\nStandard configuration using ordinary local river silt and clay.\nDouble insulation structural metrics apply.",
+                            "thermal_core.config": "TARGET_HEAT=450C\nINSULATION_LAYERS=2\nCHIMNEY_DRAFT=12x12"
+                        },
+                        history: [
+                            {
+                                id: "4f9b2d1",
+                                message: "Configured target heat metrics and chimney draft variables",
+                                timestamp: "12:04:15 PM",
+                                filesSnapshot: {
+                                    "readme.md": "# Baker's Oven Specifications\nStandard configuration using ordinary local river silt and clay.\nDouble insulation structural metrics apply.",
+                                    "thermal_core.config": "TARGET_HEAT=450C\nINSULATION_LAYERS=2\nCHIMNEY_DRAFT=12x12"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    };
+
+    let forgeState = JSON.parse(localStorage.getItem('storehouse_forge_v4')) || seedData;
+    let selectedFileName = "readme.md";
+
+    // DOM References
+    const repoList = document.getElementById('repoList');
+    const workspace = document.getElementById('workspace');
+    const welcomeView = document.getElementById('welcomeView');
+    const activeRepoTitle = document.getElementById('activeRepoTitle');
+    const activeRepoDesc = document.getElementById('activeRepoDesc');
+    const fileTree = document.getElementById('fileTree');
+    const currentEditingFileName = document.getElementById('currentEditingFileName');
+    const fileContent = document.getElementById('fileContent');
+    const commitMessage = document.getElementById('commitMessage');
+    const commitHistory = document.getElementById('commitHistory');
+    const branchSelect = document.getElementById('branchSelect');
+    const diffViewer = document.getElementById('diffViewer');
+
+    function saveState() {
+        localStorage.setItem('storehouse_forge_v4', JSON.stringify(forgeState));
+        render();
+    }
+
+    function getActiveRepo() {
+        return forgeState.repos.find(r => r.id === forgeState.activeRepoId);
+    }
+
+    function getActiveBranchData() {
+        const repo = getActiveRepo();
+        if (!repo) return null;
+        return repo.branches[repo.activeBranch];
+    }
+
+    function showNewRepoModal() {
+        const name = prompt("Enter standard alphanumeric identifier tag for repository:");
+        if (!name) return;
+        const description = prompt("Specify the sovereign objective manifest:");
+
+        const parsedName = name.toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+        const newRepo = {
+            id: Date.now().toString(),
+            name: parsedName,
+            description: description || "No structural definition provided.",
+            activeBranch: "main",
+            branches: {
+                "main": {
+                    files: {
+                        "readme.md": `# ${parsedName}\nInitialize blueprint details inside this repository layout grid.`
+                    },
+                    history: []
+                }
+            }
+        };
+
+        const initialCommit = {
+            id: Math.random().toString(16).substr(2, 7),
+            message: "Sovereign cell ignition / system setup",
+            timestamp: new Date().toLocaleTimeString(),
+            filesSnapshot: { ...newRepo.branches.main.files }
+        };
+        newRepo.branches.main.history.push(initialCommit);
+
+        forgeState.repos.push(newRepo);
+        forgeState.activeRepoId = newRepo.id;
+        selectedFileName = "readme.md";
+        saveState();
+    }
+
+    function deleteActiveRepo() {
+        if(confirm("Are you absolutely sure you want to permanently delete this repository from browser physical storage? This cannot be undone.")) {
+            forgeState.repos = forgeState.repos.filter(r => r.id !== forgeState.activeRepoId);
+            forgeState.activeRepoId = forgeState.repos.length > 0 ? forgeState.repos[0].id : null;
+            saveState();
+        }
+    }
+
+    function addNewFileToRepo() {
+        const repo = getActiveRepo();
+        const branchData = getActiveBranchData();
+        const filename = prompt("Enter precise file name identifier (e.g., matrix.json, blueprint.txt):");
+        if(!filename) return;
+
+        if (branchData.files[filename]) {
+            alert("An identical architectural layer item already exists!");
+            return;
+        }
+
+        branchData.files[filename] = `# ${filename}\nDesign architecture specifications here...`;
+        selectedFileName = filename;
+        saveState();
+    }
+
+    function deleteFileFromRepo(filename, event) {
+        event.stopPropagation();
+        const branchData = getActiveBranchData();
+        if(Object.keys(branchData.files).length <= 1) {
+            alert("A blueprint terminal cluster must maintain at least one active file layer descriptor!");
+            return;
+        }
+        if(confirm(`Purge ${filename} from active layout?`)) {
+            delete branchData.files[filename];
+            if(selectedFileName === filename) {
+                selectedFileName = Object.keys(branchData.files)[0];
+            }
+            saveState();
+        }
+    }
+
+    function selectRepo(id) {
+        forgeState.activeRepoId = id;
+        const repo = getActiveRepo();
+        const branchData = repo.branches[repo.activeBranch];
+        selectedFileName = Object.keys(branchData.files)[0] || "readme.md";
+        render();
+    }
+
+    function createNewBranch() {
+        const repo = getActiveRepo();
+        const currentBranch = repo.activeBranch;
+        const name = prompt("Enter alternative pipeline fork name (e.g., alternative-energy):");
+        if(!name) return;
+        const cleanName = name.toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+
+        if(repo.branches[cleanName]) {
+            alert("That line track pathway configuration is already deployed.");
+            return;
+        }
+
+        // Fork via deep copy of current state tracking
+        repo.branches[cleanName] = {
+            files: JSON.parse(JSON.stringify(repo.branches[currentBranch].files)),
+            history: JSON.parse(JSON.stringify(repo.branches[currentBranch].history))
+        };
+        repo.activeBranch = cleanName;
+        saveState();
+    }
+
+    function switchBranch() {
+        const repo = getActiveRepo();
+        repo.activeBranch = branchSelect.value;
+        const branchData = getActiveBranchData();
+        selectedFileName = Object.keys(branchData.files)[0] || "readme.md";
+        saveState();
+    }
+
+    function updateUncommittedChangesLive() {
+        const branchData = getActiveBranchData();
+        branchData.files[selectedFileName] = fileContent.value;
+        renderDiff();
+    }
+
+    // ADVANCED LINE DIFF CALCULATOR ENGINE
+    function calculateLineDiff(oldText, newText) {
+        const oldLines = oldText ? oldText.split('\n') : [];
+        const newLines = newText ? newText.split('\n') : [];
+        let diffHTML = "";
+
+        let i = 0, j = 0;
+        while(i < oldLines.length || j < newLines.length) {
+            if(i < oldLines.length && j < newLines.length && oldLines[i] === newLines[j]) {
+                diffHTML += `<div class="diff-line">  ${escapeHtml(oldLines[i])}</div>`;
+                i++; j++;
+            } else {
+                // simple lookahead heuristics for line identification
+                if(j < newLines.length && (i >= oldLines.length || !oldLines.includes(newLines[j], i))) {
+                    diffHTML += `<div class="diff-line add">+ ${escapeHtml(newLines[j])}</div>`;
+                    j++;
+                } else if (i < oldLines.length) {
+                    diffHTML += `<div class="diff-line remove">- ${escapeHtml(oldLines[i])}</div>`;
+                    i++;
+                }
+            }
+        }
+        return diffHTML || "No physical adjustments mapped onto active timeline configuration grid.";
+    }
+
+    function renderDiff() {
+        const branchData = getActiveBranchData();
+        if(!branchData || !branchData.history || branchData.history.length === 0) {
+            diffViewer.innerHTML = "Initial setup tracking node initialization.";
+            return;
+        }
+        const lastCommit = branchData.history[0];
+        const baseText = lastCommit.filesSnapshot[selectedFileName] || "";
+        const currentText = branchData.files[selectedFileName] || "";
+        
+        diffViewer.innerHTML = calculateLineDiff(baseText, currentText);
+    }
+
+    function handleCommit() {
+        const repo = getActiveRepo();
+        const branchData = getActiveBranchData();
+        const msg = commitMessage.value.trim();
+
+        if (!msg) {
+            alert("Commit denied. An artisan architect must detail modification contexts for log preservation!");
+            return;
+        }
+
+        const newCommit = {
+            id: Math.random().toString(16).substr(2, 7),
+            message: msg,
+            timestamp: new Date().toLocaleTimeString(),
+            filesSnapshot: JSON.parse(JSON.stringify(branchData.files))
+        };
+
+        branchData.history.unshift(newCommit);
+        commitMessage.value = "";
+        saveState();
+    }
+
+    function checkoutCommitVisual(commitId) {
+        const branchData = getActiveBranchData();
+        const historicNode = branchData.history.find(c => c.id === commitId);
+        if(historicNode && historicNode.filesSnapshot[selectedFileName] !== undefined) {
+            fileContent.value = historicNode.filesSnapshot[selectedFileName];
+            alert(`[Viewing Snapshot ${commitId}] Currently reading deep freeze records data stack layer. Changes made will update the active workspace matrix runtime data.`);
+        }
+    }
+
+    // MERGE ENGINE WITH INTEGRATED CONFLICT MANIFEST AUTOMATION
+    function mergeBranchIntoCurrent() {
+        const repo = getActiveRepo();
+        const currentBranch = repo.activeBranch;
+        const sourceBranch = prompt(`Enter source track layout to merge directly into [${currentBranch}]:`);
+        
+        if(!sourceBranch || !repo.branches[sourceBranch]) {
+            alert("Targeted tracking branch layer not found inside repository structure configuration maps.");
+            return;
+        }
+        if(sourceBranch === currentBranch) {
+            alert("Cannot initiate synchronization against identical timeline parameters context tracking nodes.");
+            return;
+        }
+
+        const targetFiles = repo.branches[currentBranch].files;
+        const sourceFiles = repo.branches[sourceBranch].files;
+        let conflictsDetected = false;
+
+        for (let fileName in sourceFiles) {
+            if (targetFiles[fileName] && targetFiles[fileName] !== sourceFiles[fileName]) {
+                conflictsDetected = true;
+                // Generate a visual merge-conflict format inside the document
+                targetFiles[fileName] = `<<<<<<< CURRENT TRACK: ${currentBranch}
+${targetFiles[fileName]}
+=======
+${sourceFiles[fileName]}
+>>>>>>> INCOMING TRACK: ${sourceBranch}`;
+            } else if (!targetFiles[fileName]) {
+                targetFiles[fileName] = sourceFiles[fileName];
+            }
+        }
+
+        const mergeCommit = {
+            id: Math.random().toString(16).substr(2, 7),
+            message: `Merged tracking branch logs [${sourceBranch}] into [${currentBranch}]`,
+            timestamp: new Date().toLocaleTimeString(),
+            filesSnapshot: JSON.parse(JSON.stringify(targetFiles))
+        };
+        repo.branches[currentBranch].history.unshift(mergeCommit);
+
+        if(conflictsDetected) {
+            alert("⚠️ TRACK OVERLAP CONFLICTS DETECTED! Overlapping layout lines have been automatically tagged with <<<<<<< and >>>>>>> notations inside your files. Resolve them manually inside the editor workspace interface then commit changes.");
+        } else {
+            alert(`Merger successfully integrated into current operational framework vector tracking parameters.`);
+        }
+        saveState();
+    }
+
+    function simulateNetworkAction(action) {
+        const addr = document.getElementById('peerAddress').value.trim();
+        if(!addr) {
+            alert("Please input valid decentralized cluster peer node address protocols configuration maps.");
+            return;
+        }
+        alert(`Connecting decentralization matrix mapping vectors...\n[Action: ${action}]\nSynchronized successfully with decentralized address node layout target: ${addr}`);
+    }
+
+    // LEDGER SYSTEMS ENGINES (VAULT CONTROL SYSTEM)
+    function exportBackup() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(forgeState, null, 2));
+        const anchor = document.createElement('a');
+        const d = new Date().toISOString().slice(0,10);
+        anchor.setAttribute("href", dataStr);
+        anchor.setAttribute("download", `open_storehouse_ledger_grid_${d}.json`);
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+    }
+
+    function importBackup(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                if (parsed && Array.isArray(parsed.repos)) {
+                    if(confirm("Confirm overwrite sequence? Active environment state maps data configuration tracks will clear.")) {
+                        forgeState = parsed;
+                        const firstRepo = forgeState.repos[0];
+                        if(firstRepo) {
+                            forgeState.activeRepoId = firstRepo.id;
+                            const bData = firstRepo.branches[firstRepo.activeBranch];
+                            selectedFileName = Object.keys(bData.files)[0] || "readme.md";
+                        }
+                        saveState();
+                        alert("Decentralized data array tracking frames re-initialized fully.");
+                    }
+                }
+            } catch(ex) { alert("Ledger payload parsing processing protocol failure."); }
+        };
+        reader.readAsText(file);
+    }
+
+    // RENDER MAPPING LAYOUT ENGINE
+    function render() {
+        repoList.innerHTML = "";
+        forgeState.repos.forEach(repo => {
+            const isActive = repo.id === forgeState.activeRepoId;
+            const item = document.createElement('div');
+            item.className = `repo-item ${isActive ? 'active' : ''}`;
+            item.onclick = () => selectRepo(repo.id);
+
+            const activeBranchData = repo.branches[repo.activeBranch] || { history: [], files: {} };
+            item.innerHTML = `
+                <div style="font-weight:bold;">${escapeHtml(repo.name)}</div>
+                <div class="repo-meta">
+                    Track: <strong>${escapeHtml(repo.activeBranch)}</strong> | 
+                    ${Object.keys(activeBranchData.files).length} docs | 
+                    ${activeBranchData.history.length} snapshots
+                </div>
+            `;
+            repoList.appendChild(item);
+        });
+
+        const activeRepo = getActiveRepo();
+        if (activeRepo) {
+            welcomeView.style.display = "none";
+            workspace.style.display = "block";
+
+            activeRepoTitle.innerText = `⎔ ${activeRepo.name}`;
+            activeRepoDesc.innerText = activeRepo.description;
+
+            // Render Branch Selection Panel Options Maps
+            branchSelect.innerHTML = "";
+            Object.keys(activeRepo.branches).forEach(bName => {
+                const opt = document.createElement('option');
+                opt.value = bName;
+                opt.innerText = bName;
+                if(bName === activeRepo.activeBranch) opt.selected = true;
+                branchSelect.appendChild(opt);
+            });
+
+            const branchData = getActiveBranchData();
+
+            // Render File Structure Directory List Tree Layout Array Map Grid 
+            fileTree.innerHTML = "";
+            Object.keys(branchData.files).forEach(fName => {
+                const isSelected = fName === selectedFileName;
+                const fItem = document.createElement('div');
+                fItem.className = `file-item ${isSelected ? 'active' : ''}`;
+                fItem.onclick = () => { selectedFileName = fName; render(); };
+                fItem.innerHTML = `
+                    <span>📄 ${escapeHtml(fName)}</span>
+                    <span style="color:var(--danger); font-weight:bold; cursor:pointer;" onclick="deleteFileFromRepo('${fName}', event)">×</span>
+                `;
+                fileTree.appendChild(fItem);
+            });
+
+            currentEditingFileName.innerText = `» Editing Component Layer: ${selectedFileName}`;
+            
+            if (document.activeElement !== fileContent) {
+                fileContent.value = branchData.files[selectedFileName] || "";
+            }
+
+            // Render Diff Output Visual Component Layer
+            renderDiff();
+
+            // Render History Timeline Manifest Ledgers
+            commitHistory.innerHTML = "";
+            branchData.history.forEach(commit => {
+                const row = document.createElement('div');
+                row.className = "timeline-item";
+                row.innerHTML = `
+                    <span style="font-family:monospace; background:#21262d; padding:2px 6px; border-radius:4px; color:#ff7b72; font-size:12px;">${commit.id}</span>
+                    <strong>${escapeHtml(commit.message)}</strong>
+                    <span style="font-size:11px; color:var(--text-muted);">— ${commit.timestamp}</span>
+                    <button class="btn-secondary" style="padding:2px 6px; font-size:11px; margin-left:10px;" onclick="checkoutCommitVisual('${commit.id}')">Inspect Layer State</button>
+                `;
+                commitHistory.appendChild(row);
+            });
+
+        } else {
+            welcomeView.style.display = "block";
+            workspace.style.display = "none";
+        }
+    }
+
+    function escapeHtml(str) {
+        if(!str) return "";
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Boot execution protocol sequences map
+    render();
+</script>
+
+</body>
+</html>
