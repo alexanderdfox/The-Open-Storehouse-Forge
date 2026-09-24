@@ -991,16 +991,21 @@
     <div id="modalRoot"></div>
 
 <script type="module">
-// Load real Git (isomorphic-git + LightningFS) for browser
-import LightningFS from "https://esm.sh/@isomorphic-git/lightning-fs@4.6.0";
-import git from "https://esm.sh/isomorphic-git@1.27.1";
-import http from "https://esm.sh/isomorphic-git@1.27.1/http/web";
+// Real Git in the browser (isomorphic-git + LightningFS)
+// jsDelivr +esm builds — avoids broken source-map 404s from some CDNs
+import LightningFS from "https://cdn.jsdelivr.net/npm/@isomorphic-git/lightning-fs@4.6.0/+esm";
+import git from "https://cdn.jsdelivr.net/npm/isomorphic-git@1.27.1/+esm";
+import http from "https://cdn.jsdelivr.net/npm/isomorphic-git@1.27.1/http/web/+esm";
 
-const fs = new LightningFS("storehouse-git-fs");
-const pfs = fs.promises;
-
-window.__git = { git, http, fs, pfs, ready: true };
-window.dispatchEvent(new Event("git-ready"));
+try {
+    const fs = new LightningFS("storehouse-git-fs");
+    const pfs = fs.promises;
+    window.__git = { git, http, fs, pfs, ready: true };
+    window.dispatchEvent(new Event("git-ready"));
+} catch (err) {
+    console.error("Git engine failed to start", err);
+    window.__git = { ready: false, error: err };
+}
 </script>
 <script>
 (function () {
