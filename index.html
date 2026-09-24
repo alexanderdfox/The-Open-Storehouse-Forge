@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Open Storehouse Forge (Pro - Enterprise Sovereign Edition)</title>
+    <title>The Open Storehouse Forge — Sovereign Engine v2</title>
     <style>
         :root {
             --bg-main: #0d1117;
             --bg-card: #161b22;
+            --bg-elevated: #1f242c;
             --border: #30363d;
             --text-main: #c9d1d9;
             --text-muted: #8b949e;
@@ -20,33 +21,31 @@
             --diff-add-text: #3fb950;
             --diff-remove: rgba(248, 81, 73, 0.15);
             --diff-remove-text: #f85149;
+            --dirty: #f78166;
         }
-
+        * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             background-color: var(--bg-main);
             color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 16px;
+            min-height: 100vh;
         }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
+        .container { max-width: 1500px; margin: 0 auto; }
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 20px;
-            margin-bottom: 20px;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
         }
-
         h1, h2, h3, h4 { color: #f0f6fc; margin-top: 0; }
-        p { color: var(--text-muted); }
-
+        h1 { font-size: 1.5rem; margin-bottom: 4px; }
+        p { color: var(--text-muted); margin: 0; }
         .btn {
             background-color: var(--accent);
             color: white;
@@ -55,85 +54,112 @@
             border-radius: 6px;
             cursor: pointer;
             font-weight: 500;
-            font-size: 14px;
-            transition: background 0.1s;
+            font-size: 13px;
+            transition: background 0.12s;
         }
         .btn:hover { background-color: var(--accent-hover); }
-        .btn-secondary { background-color: #21262d; border-color: var(--border); color: var(--link); padding: 6px 14px; border-radius: 6px; cursor: pointer; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary {
+            background-color: #21262d;
+            border: 1px solid var(--border);
+            color: var(--link);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
         .btn-secondary:hover { background-color: #30363d; }
-        .btn-danger { background-color: #21262d; border-color: var(--border); color: var(--danger); padding: 6px 14px; border-radius: 6px; cursor: pointer; }
+        .btn-danger {
+            background-color: #21262d;
+            border: 1px solid var(--border);
+            color: var(--danger);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
         .btn-danger:hover { background-color: var(--danger); color: white; }
-
-        .header-actions { display: flex; gap: 10px; }
-
+        .btn-sm { padding: 3px 8px; font-size: 11px; }
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .layout {
             display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 24px;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
         }
-
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { order: 2; }
+        }
         .sidebar, .main-panel {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 16px;
+            border-radius: 8px;
+            padding: 14px;
         }
-
         .repo-item {
             padding: 10px 12px;
             border-radius: 6px;
             cursor: pointer;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             border: 1px solid transparent;
+            transition: background 0.1s;
         }
         .repo-item:hover { background: #21262d; }
         .repo-item.active { background: #1f6feb; border-color: #388bfd; color: white; }
         .repo-item.active .repo-meta { color: #e6edf3; }
-
-        .repo-meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-
-        /* Multi-File Tree Styling */
+        .repo-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
         .file-tree {
             background: var(--bg-main);
             border: 1px solid var(--border);
             border-radius: 6px;
-            padding: 8px;
-            margin-bottom: 16px;
-            max-height: 180px;
+            padding: 6px;
+            margin-bottom: 12px;
+            max-height: 220px;
             overflow-y: auto;
         }
         .file-tree-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 11px;
+            font-weight: 600;
             margin-bottom: 6px;
             color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
         }
-        .file-item {
-            padding: 6px 10px;
-            font-family: monospace;
-            font-size: 13px;
+        .file-item, .folder-item {
+            padding: 5px 8px;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: 12.5px;
             border-radius: 4px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 6px;
         }
-        .file-item:hover { background: #30363d; }
-        .file-item.active { background: #21262d; color: var(--link); border-left: 3px solid var(--link); }
-
-        /* Branching Strip */
+        .file-item:hover, .folder-item:hover { background: #30363d; }
+        .file-item.active { background: #21262d; color: var(--link); border-left: 3px solid var(--link); padding-left: 5px; }
+        .file-item .dirty-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--dirty); flex-shrink: 0;
+        }
+        .folder-item { color: var(--text-muted); font-weight: 500; cursor: default; }
+        .folder-item .folder-name { cursor: pointer; }
+        .indent-1 { padding-left: 18px; }
+        .indent-2 { padding-left: 30px; }
+        .indent-3 { padding-left: 42px; }
         .branch-bar {
             display: flex;
             align-items: center;
-            gap: 10px;
-            background: #1f242c;
+            flex-wrap: wrap;
+            gap: 8px;
+            background: var(--bg-elevated);
             padding: 10px;
             border-radius: 6px;
             border: 1px solid var(--border);
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
         select.branch-select {
             background: var(--bg-main);
@@ -141,619 +167,1297 @@
             border: 1px solid var(--border);
             padding: 4px 8px;
             border-radius: 4px;
+            font-size: 13px;
         }
-
-        .editor-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
-
         .file-editor textarea {
             width: 100%;
-            height: 300px;
+            height: 280px;
             background: var(--bg-main);
             color: #79c0ff;
             border: 1px solid var(--border);
             border-radius: 6px;
             font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: 13px;
             padding: 12px;
-            box-sizing: border-box;
             resize: vertical;
+            line-height: 1.45;
         }
-
+        .file-editor textarea:focus { outline: 1px solid var(--link); }
+        .editor-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
         .commit-box {
-            background: #1f242c;
+            background: var(--bg-elevated);
             border: 1px solid var(--border);
             border-radius: 6px;
             padding: 12px;
-            margin-top: 16px;
+            margin-top: 14px;
         }
-        .commit-box input {
+        .commit-box input, .commit-box textarea {
             background: var(--bg-main);
             border: 1px solid var(--border);
             color: var(--text-main);
-            padding: 6px 12px;
+            padding: 8px 12px;
             border-radius: 6px;
-            width: 70%;
-            margin-right: 8px;
+            width: 100%;
+            margin-bottom: 8px;
+            font-size: 13px;
         }
-
-        /* Diff Engine Panels */
+        .commit-box textarea { height: 52px; resize: vertical; font-family: inherit; }
         .diff-viewer {
             background: var(--bg-main);
             border: 1px solid var(--border);
             border-radius: 6px;
-            padding: 12px;
-            margin-top: 16px;
-            font-family: monospace;
-            font-size: 13px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: 12.5px;
             white-space: pre-wrap;
-            max-height: 250px;
+            max-height: 220px;
             overflow-y: auto;
+            line-height: 1.4;
         }
-        .diff-line { padding: 2px 4px; border-radius: 2px; }
+        .diff-line { padding: 1px 4px; border-radius: 2px; }
         .diff-line.add { background: var(--diff-add); color: var(--diff-add-text); }
         .diff-line.remove { background: var(--diff-remove); color: var(--diff-remove-text); }
-
-        .timeline {
-            margin-top: 24px;
-            border-top: 1px solid var(--border);
-            padding-top: 16px;
-        }
+        .diff-line.context { color: var(--text-muted); }
+        .timeline { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 14px; }
         .timeline-item {
             position: relative;
-            padding-left: 24px;
-            margin-bottom: 16px;
-            font-size: 14px;
+            padding-left: 22px;
+            margin-bottom: 14px;
+            font-size: 13px;
         }
         .timeline-item::before {
-            content: ""; position: absolute; left: 6px; top: 5px; width: 8px; height: 8px; background: var(--link); border-radius: 50%;
+            content: ""; position: absolute; left: 5px; top: 6px;
+            width: 8px; height: 8px; background: var(--link); border-radius: 50%;
         }
-
-        .vault-box, .network-box {
-            margin-top: 20px;
-            padding-top: 15px;
+        .timeline-item .actions { margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .vault-box, .network-box, .search-box {
+            margin-top: 16px;
+            padding-top: 12px;
             border-top: 1px solid var(--border);
         }
-
         #importFile { display: none; }
+        .preview-pane {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 14px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.55;
+        }
+        .preview-pane h1, .preview-pane h2, .preview-pane h3 { margin-top: 0.8em; }
+        .preview-pane code { background: #21262d; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+        .preview-pane pre { background: #21262d; padding: 10px; border-radius: 6px; overflow-x: auto; }
+        .badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            background: var(--dirty);
+            color: #0d1117;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+        .search-input {
+            width: 100%;
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        /* Toast */
+        #toastContainer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 360px;
+        }
+        .toast {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            font-size: 13px;
+            animation: slideIn 0.25s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .toast.success { border-left: 3px solid var(--accent); }
+        .toast.error { border-left: 3px solid var(--danger); }
+        .toast.warning { border-left: 3px solid var(--warning); }
+        .toast.info { border-left: 3px solid var(--link); }
+        @keyframes slideIn {
+            from { transform: translateX(40px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        /* Modal */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.65);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10000;
+            padding: 16px;
+        }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+        }
+        .modal h3 { margin-bottom: 8px; }
+        .modal p { margin-bottom: 14px; font-size: 14px; }
+        .modal input, .modal textarea {
+            width: 100%;
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+        .kbd {
+            font-family: monospace;
+            font-size: 11px;
+            background: #21262d;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 1px 5px;
+            color: var(--text-muted);
+        }
+        .help-hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state h2 { color: #f0f6fc; }
+        .status-bar {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .split-view { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 700px) { .split-view { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-
 <div class="container">
     <header>
         <div>
-            <h1>The Open Storehouse Forge <span style="font-size:14px; color:var(--warning);">v1 Sovereign Engine</span></h1>
-            <p>Decentralized multi-file architectural mesh Network. Free from centralized lock-ins.</p>
+            <h1>The Open Storehouse Forge <span style="font-size:13px; color:var(--warning);">v2 Sovereign Engine</span></h1>
+            <p>Decentralized multi-file architectural mesh · Free from centralized lock-ins</p>
         </div>
         <div class="header-actions">
-            <button class="btn" onclick="showNewRepoModal()">🛠 Forge Blueprint Repository</button>
+            <button class="btn" onclick="showNewRepoModal()">🛠 Forge Repository</button>
+            <button class="btn-secondary btn-sm" onclick="showHelp()">? Shortcuts</button>
         </div>
     </header>
 
     <div class="layout">
         <div class="sidebar">
-            <h3>Blueprints (Repos)</h3>
+            <h3 style="font-size:14px; margin-bottom:10px;">Blueprints (Repos)</h3>
             <div id="repoList"></div>
 
+            <div class="search-box">
+                <h4 style="font-size:13px; margin-bottom:6px;">Search</h4>
+                <input type="text" class="search-input" id="globalSearch" placeholder="Search files & content…" oninput="renderFileTree()">
+            </div>
+
             <div class="network-box">
-                <h4>Sovereign Mesh Network</h4>
-                <p style="font-size:11px;">Simulate synchronization with remote peer nodes across the collective.</p>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <input type="text" id="peerAddress" placeholder="ipfs://peer-hash-7a2x..." style="background:var(--bg-main); border:1px solid var(--border); padding:4px; color:white; border-radius:4px; font-size:12px;">
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
-                        <button class="btn-secondary" style="font-size:12px; padding:4px;" onclick="simulateNetworkAction('Pull')">↓ Mesh Pull</button>
-                        <button class="btn-secondary" style="font-size:12px; padding:4px;" onclick="simulateNetworkAction('Push')">↑ Mesh Push</button>
-                    </div>
+                <h4 style="font-size:13px;">Sovereign Mesh Network</h4>
+                <p style="font-size:11px; margin-bottom:8px;">Simulate sync with remote peer nodes.</p>
+                <input type="text" id="peerAddress" placeholder="ipfs://peer-hash-7a2x…" style="width:100%; background:var(--bg-main); border:1px solid var(--border); padding:6px; color:white; border-radius:4px; font-size:12px; margin-bottom:8px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                    <button class="btn-secondary btn-sm" onclick="simulateNetworkAction('Pull')">↓ Mesh Pull</button>
+                    <button class="btn-secondary btn-sm" onclick="simulateNetworkAction('Push')">↑ Mesh Push</button>
                 </div>
             </div>
 
             <div class="vault-box">
-                <h4>Cold-Storage Vault</h4>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <button class="btn-secondary" style="font-size:12px;" onclick="exportBackup()">Export Ledger JSON</button>
-                    <button class="btn-secondary" style="font-size:12px;" onclick="document.getElementById('importFile').click()">Import Ledger JSON</button>
+                <h4 style="font-size:13px;">Cold-Storage Vault</h4>
+                <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+                    <button class="btn-secondary btn-sm" onclick="exportBackup()">Export Ledger JSON</button>
+                    <button class="btn-secondary btn-sm" onclick="document.getElementById('importFile').click()">Import Ledger JSON</button>
+                    <button class="btn-secondary btn-sm" onclick="exportCurrentRepoFiles()">Export Active Repo (ZIP-like JSON)</button>
                     <input type="file" id="importFile" accept=".json" onchange="importBackup(event)">
                 </div>
             </div>
         </div>
 
         <div class="main-panel" id="workspace" style="display:none;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
                 <div>
-                    <h2 id="activeRepoTitle" style="margin-bottom:4px;">Blueprint Name</h2>
+                    <h2 id="activeRepoTitle" style="margin-bottom:2px; font-size:1.25rem;">Blueprint</h2>
                     <p id="activeRepoDesc" style="font-size:13px;"></p>
                 </div>
-                <button class="btn-danger" style="font-size:12px; padding:4px 8px;" onclick="deleteActiveRepo()">Scrap Repository</button>
+                <button class="btn-danger btn-sm" onclick="deleteActiveRepo()">Scrap Repository</button>
             </div>
 
             <div class="branch-bar">
-                <strong>Active Timeline Track:</strong>
+                <strong style="font-size:12px;">Track:</strong>
                 <select id="branchSelect" class="branch-select" onchange="switchBranch()"></select>
-                <button class="btn-secondary" style="padding:2px 8px; font-size:12px;" onclick="createNewBranch()">+ Fork Track</button>
-                <button class="btn-secondary" style="padding:2px 8px; font-size:12px; color:var(--warning); border-color:var(--warning);" onclick="mergeBranchIntoCurrent()">⎔ Merge Track Into Active</button>
+                <button class="btn-secondary btn-sm" onclick="createNewBranch()">+ Fork</button>
+                <button class="btn-secondary btn-sm" style="color:var(--warning); border-color:var(--warning);" onclick="mergeBranchIntoCurrent()">⎔ Merge</button>
+                <button class="btn-danger btn-sm" onclick="deleteCurrentBranch()">Delete Track</button>
             </div>
 
-            <div class="editor-container">
-                <div>
-                    <div class="file-tree-header">
-                        <span>🗂 BLUEPRINT COMPONENT TREE</span>
-                        <button class="btn-secondary" style="padding:2px 6px; font-size:11px;" onclick="addNewFileToRepo()">+ Add Document</button>
-                    </div>
-                    <div id="fileTree" class="file-tree"></div>
+            <div class="file-tree-header">
+                <span>🗂 Component Tree</span>
+                <div style="display:flex; gap:4px;">
+                    <button class="btn-secondary btn-sm" onclick="addNewFileToRepo()">+ File</button>
+                    <button class="btn-secondary btn-sm" onclick="addNewFolderPrompt()">+ Folder</button>
+                </div>
+            </div>
+            <div id="fileTree" class="file-tree"></div>
 
-                    <div class="file-editor">
-                        <h3 id="currentEditingFileName" style="font-size:14px; font-family:monospace; color:var(--link);">file.txt</h3>
-                        <textarea id="fileContent" oninput="updateUncommittedChangesLive()"></textarea>
-                    </div>
+            <div class="editor-toolbar">
+                <h3 id="currentEditingFileName" style="font-size:13px; font-family:monospace; color:var(--link); margin:0;">file.txt</h3>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button class="btn-secondary btn-sm" id="previewToggle" onclick="togglePreview()" style="display:none;">Preview MD</button>
+                    <button class="btn-secondary btn-sm" onclick="renameCurrentFile()">Rename</button>
+                    <button class="btn-danger btn-sm" onclick="deleteCurrentFile()">Delete</button>
                 </div>
             </div>
 
+            <div id="editorArea">
+                <div class="file-editor">
+                    <textarea id="fileContent" oninput="onEditorInput()" spellcheck="false"></textarea>
+                </div>
+                <div id="previewPane" class="preview-pane" style="display:none;"></div>
+            </div>
+
+            <div class="status-bar">
+                <span id="dirtyStatus">Clean</span>
+                <span id="fileStats"></span>
+                <span class="help-hint">Ctrl+S / Ctrl+Enter = Commit · Ctrl+P = Preview · Esc = Close modal</span>
+            </div>
+
             <div id="diffSection">
-                <h4 style="margin-bottom:6px; font-size:13px; color:var(--text-muted);">Uncommitted Manifest Changes (Vs Last Snapshot Head)</h4>
-                <div id="diffViewer" class="diff-viewer">No adjustments tracked on the anvil.</div>
+                <h4 style="margin:12px 0 6px; font-size:12px; color:var(--text-muted);">Uncommitted Changes (vs HEAD)</h4>
+                <div id="diffViewer" class="diff-viewer">No adjustments tracked.</div>
             </div>
 
             <div class="commit-box">
-                <h4>Forge Snapshot Node (Commit)</h4>
-                <input type="text" id="commitMessage" placeholder="Document changes to this architecture...">
-                <button class="btn" onclick="handleCommit()">Commit changes</button>
+                <h4 style="font-size:13px; margin-bottom:8px;">Forge Snapshot (Commit)</h4>
+                <textarea id="commitMessage" placeholder="Describe the architectural changes…"></textarea>
+                <button class="btn" id="commitBtn" onclick="handleCommit()">Commit changes</button>
             </div>
 
             <div class="timeline">
-                <h3>Chronicle of Craftsmanship (Commit Ledger)</h3>
+                <h3 style="font-size:14px;">Chronicle of Craftsmanship</h3>
                 <div id="commitHistory"></div>
             </div>
         </div>
 
-        <div class="main-panel" id="welcomeView" style="text-align: center; padding: 60px 20px;">
+        <div class="main-panel empty-state" id="welcomeView">
             <h2>The Autonomous Crafting Vault</h2>
-            <p>Select a decentralized blueprint workspace from the ledger array or setup an isolated repository grid workspace.</p>
+            <p style="margin:12px 0 20px;">Select a blueprint from the ledger or forge a new isolated repository workspace.</p>
+            <button class="btn" onclick="showNewRepoModal()">🛠 Forge First Repository</button>
         </div>
     </div>
 </div>
 
+<div id="toastContainer"></div>
+<div id="modalRoot"></div>
+
 <script>
-    // Robust multi-file setup with full branch support
+(function () {
+    "use strict";
+
+    const STORAGE_KEY = "storehouse_forge_v5";
     const seedData = {
         activeRepoId: "1001",
-        repos: [
-            {
-                id: "1001",
-                name: "bakers-oven-v4",
-                description: "Eldrin's optimized masonry oven plans maximizing thermal mechanics without relying on Corporate Oracle resources.",
-                activeBranch: "main",
-                branches: {
-                    "main": {
-                        files: {
-                            "readme.md": "# Baker's Oven Specifications\nStandard configuration using ordinary local river silt and clay.\nDouble insulation structural metrics apply.",
-                            "thermal_core.config": "TARGET_HEAT=450C\nINSULATION_LAYERS=2\nCHIMNEY_DRAFT=12x12"
-                        },
-                        history: [
-                            {
-                                id: "4f9b2d1",
-                                message: "Configured target heat metrics and chimney draft variables",
-                                timestamp: "12:04:15 PM",
-                                filesSnapshot: {
-                                    "readme.md": "# Baker's Oven Specifications\nStandard configuration using ordinary local river silt and clay.\nDouble insulation structural metrics apply.",
-                                    "thermal_core.config": "TARGET_HEAT=450C\nINSULATION_LAYERS=2\nCHIMNEY_DRAFT=12x12"
-                                }
-                            }
-                        ]
-                    }
+        repos: [{
+            id: "1001",
+            name: "bakers-oven-v4",
+            description: "Eldrin's optimized masonry oven plans maximizing thermal mechanics without Corporate Oracle resources.",
+            activeBranch: "main",
+            branches: {
+                main: {
+                    files: {
+                        "readme.md": "# Baker's Oven Specifications\n\nStandard configuration using ordinary local river silt and clay.\n\nDouble insulation structural metrics apply.\n\n## Goals\n- High thermal mass\n- Minimal external fuel",
+                        "thermal_core.config": "TARGET_HEAT=450C\nINSULATION_LAYERS=2\nCHIMNEY_DRAFT=12x12",
+                        "docs/notes.txt": "Local clay sources preferred.\nAvoid imported refractories when possible."
+                    },
+                    history: [{
+                        id: "4f9b2d1",
+                        message: "Configured target heat metrics and chimney draft variables",
+                        timestamp: new Date().toLocaleString(),
+                        filesSnapshot: {
+                            "readme.md": "# Baker's Oven Specifications\n\nStandard configuration using ordinary local river silt and clay.\n\nDouble insulation structural metrics apply.\n\n## Goals\n- High thermal mass\n- Minimal external fuel",
+                            "thermal_core.config": "TARGET_HEAT=450C\nINSULATION_LAYERS=2\nCHIMNEY_DRAFT=12x12",
+                            "docs/notes.txt": "Local clay sources preferred.\nAvoid imported refractories when possible."
+                        }
+                    }]
                 }
             }
-        ]
+        }]
     };
 
-    let forgeState = JSON.parse(localStorage.getItem('storehouse_forge_v4')) || seedData;
+    let forgeState = null;
     let selectedFileName = "readme.md";
+    let showPreview = false;
+    let isViewingHistoric = false;
 
-    // DOM References
-    const repoList = document.getElementById('repoList');
-    const workspace = document.getElementById('workspace');
-    const welcomeView = document.getElementById('welcomeView');
-    const activeRepoTitle = document.getElementById('activeRepoTitle');
-    const activeRepoDesc = document.getElementById('activeRepoDesc');
-    const fileTree = document.getElementById('fileTree');
-    const currentEditingFileName = document.getElementById('currentEditingFileName');
-    const fileContent = document.getElementById('fileContent');
-    const commitMessage = document.getElementById('commitMessage');
-    const commitHistory = document.getElementById('commitHistory');
-    const branchSelect = document.getElementById('branchSelect');
-    const diffViewer = document.getElementById('diffViewer');
+    // ---------- Utilities ----------
+    function loadState() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && Array.isArray(parsed.repos)) return parsed;
+            }
+        } catch (e) {}
+        return JSON.parse(JSON.stringify(seedData));
+    }
 
     function saveState() {
-        localStorage.setItem('storehouse_forge_v4', JSON.stringify(forgeState));
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(forgeState));
+        } catch (e) {
+            toast("Storage full or unavailable", "error");
+        }
         render();
     }
 
+    function escapeHtml(str) {
+        if (str == null) return "";
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    function toast(msg, type = "info", duration = 3200) {
+        const container = document.getElementById("toastContainer");
+        const el = document.createElement("div");
+        el.className = `toast ${type}`;
+        el.textContent = msg;
+        container.appendChild(el);
+        setTimeout(() => {
+            el.style.opacity = "0";
+            el.style.transform = "translateX(30px)";
+            el.style.transition = "0.3s";
+            setTimeout(() => el.remove(), 300);
+        }, duration);
+    }
+
+    function showModal({ title, body, inputPlaceholder, inputValue = "", confirmText = "OK", cancelText = "Cancel", danger = false }) {
+        return new Promise(resolve => {
+            const root = document.getElementById("modalRoot");
+            root.innerHTML = `
+                <div class="modal-overlay" id="modalOverlay">
+                    <div class="modal">
+                        <h3>${escapeHtml(title)}</h3>
+                        ${body ? `<p>${body}</p>` : ""}
+                        ${inputPlaceholder !== undefined ? `<input type="text" id="modalInput" placeholder="${escapeHtml(inputPlaceholder)}" value="${escapeHtml(inputValue)}">` : ""}
+                        <div class="modal-actions">
+                            <button class="btn-secondary" id="modalCancel">${escapeHtml(cancelText)}</button>
+                            <button class="${danger ? "btn-danger" : "btn"}" id="modalConfirm">${escapeHtml(confirmText)}</button>
+                        </div>
+                    </div>
+                </div>`;
+            const input = document.getElementById("modalInput");
+            if (input) {
+                input.focus();
+                input.select();
+            }
+            const cleanup = (val) => {
+                root.innerHTML = "";
+                resolve(val);
+            };
+            document.getElementById("modalConfirm").onclick = () => {
+                cleanup(input ? input.value.trim() : true);
+            };
+            document.getElementById("modalCancel").onclick = () => cleanup(null);
+            document.getElementById("modalOverlay").onclick = (e) => {
+                if (e.target.id === "modalOverlay") cleanup(null);
+            };
+            const keyHandler = (e) => {
+                if (e.key === "Escape") { cleanup(null); document.removeEventListener("keydown", keyHandler); }
+                if (e.key === "Enter" && input) { cleanup(input.value.trim()); document.removeEventListener("keydown", keyHandler); }
+            };
+            document.addEventListener("keydown", keyHandler);
+        });
+    }
+
     function getActiveRepo() {
-        return forgeState.repos.find(r => r.id === forgeState.activeRepoId);
+        return forgeState.repos.find(r => r.id === forgeState.activeRepoId) || null;
     }
 
     function getActiveBranchData() {
         const repo = getActiveRepo();
         if (!repo) return null;
-        return repo.branches[repo.activeBranch];
+        return repo.branches[repo.activeBranch] || null;
     }
 
-    function showNewRepoModal() {
-        const name = prompt("Enter standard alphanumeric identifier tag for repository:");
-        if (!name) return;
-        const description = prompt("Specify the sovereign objective manifest:");
+    function getHeadSnapshot() {
+        const bd = getActiveBranchData();
+        if (!bd || !bd.history.length) return {};
+        return bd.history[0].filesSnapshot || {};
+    }
 
-        const parsedName = name.toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+    function isFileDirty(name) {
+        const bd = getActiveBranchData();
+        if (!bd) return false;
+        const head = getHeadSnapshot();
+        const current = bd.files[name] || "";
+        const base = head[name] || "";
+        return current !== base;
+    }
+
+    function hasAnyDirty() {
+        const bd = getActiveBranchData();
+        if (!bd) return false;
+        return Object.keys(bd.files).some(isFileDirty);
+    }
+
+    // ---------- Improved Diff (simple LCS-based line diff) ----------
+    function computeLCS(a, b) {
+        const m = a.length, n = b.length;
+        const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+        for (let i = 1; i <= m; i++) {
+            for (let j = 1; j <= n; j++) {
+                if (a[i - 1] === b[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
+                else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+        const result = [];
+        let i = m, j = n;
+        while (i > 0 && j > 0) {
+            if (a[i - 1] === b[j - 1]) {
+                result.unshift({ type: "equal", line: a[i - 1] });
+                i--; j--;
+            } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+                result.unshift({ type: "remove", line: a[i - 1] });
+                i--;
+            } else {
+                result.unshift({ type: "add", line: b[j - 1] });
+                j--;
+            }
+        }
+        while (i > 0) { result.unshift({ type: "remove", line: a[i - 1] }); i--; }
+        while (j > 0) { result.unshift({ type: "add", line: b[j - 1] }); j--; }
+        return result;
+    }
+
+    function calculateLineDiff(oldText, newText) {
+        const oldLines = (oldText || "").split("\n");
+        const newLines = (newText || "").split("\n");
+        if (oldLines.length === 1 && oldLines[0] === "" && newLines.length === 1 && newLines[0] === "") {
+            return `<div class="diff-line context">No changes.</div>`;
+        }
+        // Limit LCS for performance on huge files
+        if (oldLines.length > 800 || newLines.length > 800) {
+            return fallbackDiff(oldLines, newLines);
+        }
+        const ops = computeLCS(oldLines, newLines);
+        let html = "";
+        let hasChange = false;
+        for (const op of ops) {
+            if (op.type === "equal") {
+                html += `<div class="diff-line context">  ${escapeHtml(op.line)}</div>`;
+            } else if (op.type === "add") {
+                html += `<div class="diff-line add">+ ${escapeHtml(op.line)}</div>`;
+                hasChange = true;
+            } else {
+                html += `<div class="diff-line remove">- ${escapeHtml(op.line)}</div>`;
+                hasChange = true;
+            }
+        }
+        return hasChange ? html : `<div class="diff-line context">No physical adjustments mapped.</div>`;
+    }
+
+    function fallbackDiff(oldLines, newLines) {
+        let html = "";
+        const max = Math.max(oldLines.length, newLines.length);
+        for (let i = 0; i < max; i++) {
+            const o = oldLines[i], n = newLines[i];
+            if (o === n) html += `<div class="diff-line context">  ${escapeHtml(o || "")}</div>`;
+            else {
+                if (o !== undefined) html += `<div class="diff-line remove">- ${escapeHtml(o)}</div>`;
+                if (n !== undefined) html += `<div class="diff-line add">+ ${escapeHtml(n)}</div>`;
+            }
+        }
+        return html;
+    }
+
+    function renderDiff() {
+        const viewer = document.getElementById("diffViewer");
+        const bd = getActiveBranchData();
+        if (!bd) { viewer.innerHTML = "No active branch."; return; }
+        if (!bd.history.length) {
+            viewer.innerHTML = `<div class="diff-line context">Initial setup — no HEAD yet.</div>`;
+            return;
+        }
+        const head = getHeadSnapshot();
+        const base = head[selectedFileName] || "";
+        const current = bd.files[selectedFileName] || "";
+        viewer.innerHTML = calculateLineDiff(base, current);
+    }
+
+    // ---------- File tree with folders ----------
+    function buildTree(files) {
+        const root = { folders: {}, files: {} };
+        Object.keys(files).forEach(path => {
+            const parts = path.split("/");
+            let node = root;
+            for (let i = 0; i < parts.length - 1; i++) {
+                const p = parts[i];
+                if (!node.folders[p]) node.folders[p] = { folders: {}, files: {} };
+                node = node.folders[p];
+            }
+            node.files[parts[parts.length - 1]] = path;
+        });
+        return root;
+    }
+
+    function renderFileTree() {
+        const treeEl = document.getElementById("fileTree");
+        const bd = getActiveBranchData();
+        if (!bd) { treeEl.innerHTML = ""; return; }
+
+        const query = (document.getElementById("globalSearch").value || "").toLowerCase().trim();
+        let paths = Object.keys(bd.files);
+        if (query) {
+            paths = paths.filter(p => {
+                if (p.toLowerCase().includes(query)) return true;
+                return (bd.files[p] || "").toLowerCase().includes(query);
+            });
+        }
+
+        if (!paths.length) {
+            treeEl.innerHTML = `<div style="padding:10px; color:var(--text-muted); font-size:12px;">No matching files.</div>`;
+            return;
+        }
+
+        const filteredFiles = {};
+        paths.forEach(p => filteredFiles[p] = bd.files[p]);
+        const tree = buildTree(filteredFiles);
+
+        function renderNode(node, depth) {
+            let html = "";
+            const folderNames = Object.keys(node.folders).sort();
+            const fileNames = Object.keys(node.files).sort();
+            folderNames.forEach(fname => {
+                html += `<div class="folder-item indent-${Math.min(depth, 3)}"><span class="folder-name">📁 ${escapeHtml(fname)}/</span></div>`;
+                html += renderNode(node.folders[fname], depth + 1);
+            });
+            fileNames.forEach(fname => {
+                const fullPath = node.files[fname];
+                const active = fullPath === selectedFileName ? "active" : "";
+                const dirty = isFileDirty(fullPath) ? `<span class="dirty-dot" title="Uncommitted changes"></span>` : "";
+                html += `<div class="file-item ${active} indent-${Math.min(depth, 3)}" data-path="${escapeHtml(fullPath)}">
+                    <span>📄 ${escapeHtml(fname)}</span>
+                    ${dirty}
+                </div>`;
+            });
+            return html;
+        }
+
+        treeEl.innerHTML = renderNode(tree, 0);
+        treeEl.querySelectorAll(".file-item").forEach(el => {
+            el.onclick = () => {
+                selectedFileName = el.dataset.path;
+                isViewingHistoric = false;
+                showPreview = false;
+                render();
+            };
+        });
+    }
+
+    // ---------- Core actions ----------
+    async function showNewRepoModal() {
+        const name = await showModal({
+            title: "Forge New Repository",
+            body: "Enter an alphanumeric identifier for the new blueprint.",
+            inputPlaceholder: "e.g. thermal-core-v2",
+            confirmText: "Create"
+        });
+        if (!name) return;
+        const description = await showModal({
+            title: "Objective Manifest",
+            body: "Describe the sovereign purpose of this repository.",
+            inputPlaceholder: "Short description…",
+            confirmText: "Continue"
+        });
+        const parsedName = name.toLowerCase().replace(/[^a-z0-9-_]/g, "-") || "untitled";
         const newRepo = {
             id: Date.now().toString(),
             name: parsedName,
             description: description || "No structural definition provided.",
             activeBranch: "main",
             branches: {
-                "main": {
-                    files: {
-                        "readme.md": `# ${parsedName}\nInitialize blueprint details inside this repository layout grid.`
-                    },
+                main: {
+                    files: { "readme.md": `# ${parsedName}\n\nInitialize blueprint details here.` },
                     history: []
                 }
             }
         };
-
-        const initialCommit = {
-            id: Math.random().toString(16).substr(2, 7),
+        const initial = {
+            id: Math.random().toString(16).slice(2, 9),
             message: "Sovereign cell ignition / system setup",
-            timestamp: new Date().toLocaleTimeString(),
+            timestamp: new Date().toLocaleString(),
             filesSnapshot: { ...newRepo.branches.main.files }
         };
-        newRepo.branches.main.history.push(initialCommit);
-
+        newRepo.branches.main.history.push(initial);
         forgeState.repos.push(newRepo);
         forgeState.activeRepoId = newRepo.id;
         selectedFileName = "readme.md";
+        isViewingHistoric = false;
         saveState();
+        toast(`Repository “${parsedName}” forged`, "success");
     }
 
-    function deleteActiveRepo() {
-        if(confirm("Are you absolutely sure you want to permanently delete this repository from browser physical storage? This cannot be undone.")) {
-            forgeState.repos = forgeState.repos.filter(r => r.id !== forgeState.activeRepoId);
-            forgeState.activeRepoId = forgeState.repos.length > 0 ? forgeState.repos[0].id : null;
-            saveState();
-        }
-    }
-
-    function addNewFileToRepo() {
+    async function deleteActiveRepo() {
         const repo = getActiveRepo();
-        const branchData = getActiveBranchData();
-        const filename = prompt("Enter precise file name identifier (e.g., matrix.json, blueprint.txt):");
-        if(!filename) return;
-
-        if (branchData.files[filename]) {
-            alert("An identical architectural layer item already exists!");
-            return;
-        }
-
-        branchData.files[filename] = `# ${filename}\nDesign architecture specifications here...`;
-        selectedFileName = filename;
+        if (!repo) return;
+        const ok = await showModal({
+            title: "Scrap Repository",
+            body: `Permanently delete “${escapeHtml(repo.name)}” and all its tracks? This cannot be undone.`,
+            confirmText: "Delete Forever",
+            danger: true
+        });
+        if (!ok) return;
+        forgeState.repos = forgeState.repos.filter(r => r.id !== forgeState.activeRepoId);
+        forgeState.activeRepoId = forgeState.repos[0]?.id || null;
+        selectedFileName = "readme.md";
         saveState();
+        toast("Repository removed from local ledger", "warning");
     }
 
-    function deleteFileFromRepo(filename, event) {
-        event.stopPropagation();
-        const branchData = getActiveBranchData();
-        if(Object.keys(branchData.files).length <= 1) {
-            alert("A blueprint terminal cluster must maintain at least one active file layer descriptor!");
+    async function addNewFileToRepo() {
+        const path = await showModal({
+            title: "Add Document",
+            body: "Enter path (folders allowed, e.g. src/core/config.json)",
+            inputPlaceholder: "path/to/file.ext",
+            confirmText: "Add"
+        });
+        if (!path) return;
+        const clean = path.replace(/^\/+|\/+$/g, "").replace(/\/+/g, "/");
+        if (!clean) return;
+        const bd = getActiveBranchData();
+        if (bd.files[clean]) {
+            toast("A file with that path already exists", "error");
             return;
         }
-        if(confirm(`Purge ${filename} from active layout?`)) {
-            delete branchData.files[filename];
-            if(selectedFileName === filename) {
-                selectedFileName = Object.keys(branchData.files)[0];
-            }
-            saveState();
+        bd.files[clean] = `# ${clean}\n\nDesign architecture specifications here…\n`;
+        selectedFileName = clean;
+        isViewingHistoric = false;
+        saveState();
+        toast(`Added ${clean}`, "success");
+    }
+
+    async function addNewFolderPrompt() {
+        const folder = await showModal({
+            title: "Create Folder Path",
+            body: "Enter folder path. A placeholder .gitkeep-style file will be created.",
+            inputPlaceholder: "e.g. docs/specs",
+            confirmText: "Create"
+        });
+        if (!folder) return;
+        const clean = folder.replace(/^\/+|\/+$/g, "").replace(/\/+/g, "/");
+        const placeholder = `${clean}/.keep`;
+        const bd = getActiveBranchData();
+        if (bd.files[placeholder]) {
+            toast("Folder already has content", "info");
+            return;
         }
+        bd.files[placeholder] = "";
+        selectedFileName = placeholder;
+        saveState();
+        toast(`Folder path ready: ${clean}`, "success");
+    }
+
+    async function renameCurrentFile() {
+        if (!selectedFileName) return;
+        const newName = await showModal({
+            title: "Rename File",
+            body: `Current: ${escapeHtml(selectedFileName)}`,
+            inputPlaceholder: "new/path/name.ext",
+            inputValue: selectedFileName,
+            confirmText: "Rename"
+        });
+        if (!newName || newName === selectedFileName) return;
+        const clean = newName.replace(/^\/+|\/+$/g, "").replace(/\/+/g, "/");
+        const bd = getActiveBranchData();
+        if (bd.files[clean]) {
+            toast("Target path already exists", "error");
+            return;
+        }
+        bd.files[clean] = bd.files[selectedFileName];
+        delete bd.files[selectedFileName];
+        selectedFileName = clean;
+        saveState();
+        toast("File renamed", "success");
+    }
+
+    async function deleteCurrentFile() {
+        const bd = getActiveBranchData();
+        if (!bd || Object.keys(bd.files).length <= 1) {
+            toast("A repository must keep at least one file", "error");
+            return;
+        }
+        const ok = await showModal({
+            title: "Delete File",
+            body: `Purge “${escapeHtml(selectedFileName)}” from the active track?`,
+            confirmText: "Delete",
+            danger: true
+        });
+        if (!ok) return;
+        delete bd.files[selectedFileName];
+        selectedFileName = Object.keys(bd.files)[0];
+        saveState();
+        toast("File removed", "warning");
     }
 
     function selectRepo(id) {
         forgeState.activeRepoId = id;
         const repo = getActiveRepo();
-        const branchData = repo.branches[repo.activeBranch];
-        selectedFileName = Object.keys(branchData.files)[0] || "readme.md";
+        const bd = repo.branches[repo.activeBranch];
+        selectedFileName = Object.keys(bd.files)[0] || "readme.md";
+        isViewingHistoric = false;
+        showPreview = false;
         render();
     }
 
-    function createNewBranch() {
+    async function createNewBranch() {
+        const name = await showModal({
+            title: "Fork New Track",
+            body: "Enter name for the new branch (fork of current state).",
+            inputPlaceholder: "e.g. experimental-heat",
+            confirmText: "Fork"
+        });
+        if (!name) return;
+        const clean = name.toLowerCase().replace(/[^a-z0-9-_]/g, "-");
         const repo = getActiveRepo();
-        const currentBranch = repo.activeBranch;
-        const name = prompt("Enter alternative pipeline fork name (e.g., alternative-energy):");
-        if(!name) return;
-        const cleanName = name.toLowerCase().replace(/[^a-z0-9-_]/g, '-');
-
-        if(repo.branches[cleanName]) {
-            alert("That line track pathway configuration is already deployed.");
+        if (repo.branches[clean]) {
+            toast("That track already exists", "error");
             return;
         }
-
-        // Fork via deep copy of current state tracking
-        repo.branches[cleanName] = {
-            files: JSON.parse(JSON.stringify(repo.branches[currentBranch].files)),
-            history: JSON.parse(JSON.stringify(repo.branches[currentBranch].history))
+        const current = repo.branches[repo.activeBranch];
+        repo.branches[clean] = {
+            files: JSON.parse(JSON.stringify(current.files)),
+            history: JSON.parse(JSON.stringify(current.history))
         };
-        repo.activeBranch = cleanName;
+        repo.activeBranch = clean;
         saveState();
+        toast(`Track “${clean}” created and activated`, "success");
     }
 
     function switchBranch() {
         const repo = getActiveRepo();
-        repo.activeBranch = branchSelect.value;
-        const branchData = getActiveBranchData();
-        selectedFileName = Object.keys(branchData.files)[0] || "readme.md";
+        repo.activeBranch = document.getElementById("branchSelect").value;
+        const bd = getActiveBranchData();
+        selectedFileName = Object.keys(bd.files)[0] || "readme.md";
+        isViewingHistoric = false;
+        showPreview = false;
         saveState();
     }
 
-    function updateUncommittedChangesLive() {
-        const branchData = getActiveBranchData();
-        branchData.files[selectedFileName] = fileContent.value;
+    async function deleteCurrentBranch() {
+        const repo = getActiveRepo();
+        if (Object.keys(repo.branches).length <= 1) {
+            toast("Cannot delete the only remaining track", "error");
+            return;
+        }
+        if (repo.activeBranch === "main") {
+            const ok = await showModal({
+                title: "Delete main?",
+                body: "You are about to delete the main track. Continue?",
+                confirmText: "Delete main",
+                danger: true
+            });
+            if (!ok) return;
+        } else {
+            const ok = await showModal({
+                title: "Delete Track",
+                body: `Delete branch “${repo.activeBranch}”?`,
+                confirmText: "Delete",
+                danger: true
+            });
+            if (!ok) return;
+        }
+        const dying = repo.activeBranch;
+        delete repo.branches[dying];
+        repo.activeBranch = Object.keys(repo.branches)[0];
+        selectedFileName = Object.keys(repo.branches[repo.activeBranch].files)[0] || "readme.md";
+        saveState();
+        toast(`Track “${dying}” removed`, "warning");
+    }
+
+    function onEditorInput() {
+        if (isViewingHistoric) {
+            isViewingHistoric = false;
+            toast("You are now editing the live workspace (historic view exited)", "info");
+        }
+        const bd = getActiveBranchData();
+        if (bd) bd.files[selectedFileName] = document.getElementById("fileContent").value;
+        updateDirtyUI();
         renderDiff();
+        if (showPreview) renderPreview();
     }
 
-    // ADVANCED LINE DIFF CALCULATOR ENGINE
-    function calculateLineDiff(oldText, newText) {
-        const oldLines = oldText ? oldText.split('\n') : [];
-        const newLines = newText ? newText.split('\n') : [];
-        let diffHTML = "";
-
-        let i = 0, j = 0;
-        while(i < oldLines.length || j < newLines.length) {
-            if(i < oldLines.length && j < newLines.length && oldLines[i] === newLines[j]) {
-                diffHTML += `<div class="diff-line">  ${escapeHtml(oldLines[i])}</div>`;
-                i++; j++;
-            } else {
-                // simple lookahead heuristics for line identification
-                if(j < newLines.length && (i >= oldLines.length || !oldLines.includes(newLines[j], i))) {
-                    diffHTML += `<div class="diff-line add">+ ${escapeHtml(newLines[j])}</div>`;
-                    j++;
-                } else if (i < oldLines.length) {
-                    diffHTML += `<div class="diff-line remove">- ${escapeHtml(oldLines[i])}</div>`;
-                    i++;
-                }
-            }
-        }
-        return diffHTML || "No physical adjustments mapped onto active timeline configuration grid.";
+    function updateDirtyUI() {
+        const dirty = isFileDirty(selectedFileName);
+        const status = document.getElementById("dirtyStatus");
+        const btn = document.getElementById("commitBtn");
+        status.textContent = dirty ? "● Uncommitted changes" : "Clean";
+        status.style.color = dirty ? "var(--dirty)" : "var(--text-muted)";
+        btn.disabled = !hasAnyDirty();
+        const content = document.getElementById("fileContent").value || "";
+        const lines = content.split("\n").length;
+        const chars = content.length;
+        document.getElementById("fileStats").textContent = `${lines} lines · ${chars} chars`;
     }
 
-    function renderDiff() {
-        const branchData = getActiveBranchData();
-        if(!branchData || !branchData.history || branchData.history.length === 0) {
-            diffViewer.innerHTML = "Initial setup tracking node initialization.";
-            return;
-        }
-        const lastCommit = branchData.history[0];
-        const baseText = lastCommit.filesSnapshot[selectedFileName] || "";
-        const currentText = branchData.files[selectedFileName] || "";
-        
-        diffViewer.innerHTML = calculateLineDiff(baseText, currentText);
-    }
-
-    function handleCommit() {
-        const repo = getActiveRepo();
-        const branchData = getActiveBranchData();
-        const msg = commitMessage.value.trim();
-
+    async function handleCommit() {
+        const msg = document.getElementById("commitMessage").value.trim();
         if (!msg) {
-            alert("Commit denied. An artisan architect must detail modification contexts for log preservation!");
+            toast("A commit message is required", "error");
             return;
         }
-
+        if (!hasAnyDirty()) {
+            toast("Nothing to commit", "info");
+            return;
+        }
+        const bd = getActiveBranchData();
         const newCommit = {
-            id: Math.random().toString(16).substr(2, 7),
+            id: Math.random().toString(16).slice(2, 9),
             message: msg,
-            timestamp: new Date().toLocaleTimeString(),
-            filesSnapshot: JSON.parse(JSON.stringify(branchData.files))
+            timestamp: new Date().toLocaleString(),
+            filesSnapshot: JSON.parse(JSON.stringify(bd.files))
         };
-
-        branchData.history.unshift(newCommit);
-        commitMessage.value = "";
+        bd.history.unshift(newCommit);
+        document.getElementById("commitMessage").value = "";
+        isViewingHistoric = false;
         saveState();
+        toast(`Committed ${newCommit.id}`, "success");
     }
 
-    function checkoutCommitVisual(commitId) {
-        const branchData = getActiveBranchData();
-        const historicNode = branchData.history.find(c => c.id === commitId);
-        if(historicNode && historicNode.filesSnapshot[selectedFileName] !== undefined) {
-            fileContent.value = historicNode.filesSnapshot[selectedFileName];
-            alert(`[Viewing Snapshot ${commitId}] Currently reading deep freeze records data stack layer. Changes made will update the active workspace matrix runtime data.`);
+    function checkoutCommitFull(commitId) {
+        const bd = getActiveBranchData();
+        const node = bd.history.find(c => c.id === commitId);
+        if (!node) return;
+        // Full restore of all files to that snapshot
+        bd.files = JSON.parse(JSON.stringify(node.filesSnapshot));
+        if (!bd.files[selectedFileName]) {
+            selectedFileName = Object.keys(bd.files)[0] || "readme.md";
         }
+        isViewingHistoric = false;
+        showPreview = false;
+        saveState();
+        toast(`Restored full tree to snapshot ${commitId}`, "success");
     }
 
-    // MERGE ENGINE WITH INTEGRATED CONFLICT MANIFEST AUTOMATION
-    function mergeBranchIntoCurrent() {
+    function inspectCommitFile(commitId) {
+        const bd = getActiveBranchData();
+        const node = bd.history.find(c => c.id === commitId);
+        if (!node) return;
+        const content = node.filesSnapshot[selectedFileName];
+        if (content === undefined) {
+            toast("This file did not exist in that snapshot", "warning");
+            return;
+        }
+        document.getElementById("fileContent").value = content;
+        isViewingHistoric = true;
+        showPreview = false;
+        updateDirtyUI();
+        renderDiff();
+        toast(`[Inspect] Viewing ${selectedFileName} @ ${commitId} — edits will update live workspace`, "info");
+    }
+
+    async function createBranchFromCommit(commitId) {
+        const name = await showModal({
+            title: "Branch from Snapshot",
+            body: `Create a new track starting from commit ${commitId}.`,
+            inputPlaceholder: "branch-name",
+            confirmText: "Create"
+        });
+        if (!name) return;
+        const clean = name.toLowerCase().replace(/[^a-z0-9-_]/g, "-");
         const repo = getActiveRepo();
-        const currentBranch = repo.activeBranch;
-        const sourceBranch = prompt(`Enter source track layout to merge directly into [${currentBranch}]:`);
-        
-        if(!sourceBranch || !repo.branches[sourceBranch]) {
-            alert("Targeted tracking branch layer not found inside repository structure configuration maps.");
+        if (repo.branches[clean]) {
+            toast("Branch already exists", "error");
             return;
         }
-        if(sourceBranch === currentBranch) {
-            alert("Cannot initiate synchronization against identical timeline parameters context tracking nodes.");
+        const bd = getActiveBranchData();
+        const node = bd.history.find(c => c.id === commitId);
+        if (!node) return;
+        // History up to and including this commit
+        const idx = bd.history.findIndex(c => c.id === commitId);
+        const slicedHistory = bd.history.slice(idx).map(c => JSON.parse(JSON.stringify(c)));
+        repo.branches[clean] = {
+            files: JSON.parse(JSON.stringify(node.filesSnapshot)),
+            history: slicedHistory
+        };
+        repo.activeBranch = clean;
+        selectedFileName = Object.keys(node.filesSnapshot)[0] || "readme.md";
+        saveState();
+        toast(`Branch “${clean}” created from ${commitId}`, "success");
+    }
+
+    async function revertCommit(commitId) {
+        const ok = await showModal({
+            title: "Revert Snapshot",
+            body: "This creates a new commit that restores the tree to the state of the selected snapshot (does not rewrite history).",
+            confirmText: "Create revert commit"
+        });
+        if (!ok) return;
+        const bd = getActiveBranchData();
+        const node = bd.history.find(c => c.id === commitId);
+        if (!node) return;
+        bd.files = JSON.parse(JSON.stringify(node.filesSnapshot));
+        const revertCommit = {
+            id: Math.random().toString(16).slice(2, 9),
+            message: `Revert to ${commitId}: ${node.message}`,
+            timestamp: new Date().toLocaleString(),
+            filesSnapshot: JSON.parse(JSON.stringify(bd.files))
+        };
+        bd.history.unshift(revertCommit);
+        saveState();
+        toast("Revert commit created", "success");
+    }
+
+    // ---------- Merge ----------
+    async function mergeBranchIntoCurrent() {
+        const repo = getActiveRepo();
+        const current = repo.activeBranch;
+        const source = await showModal({
+            title: "Merge Track",
+            body: `Merge another track into “${current}”.`,
+            inputPlaceholder: "source-branch-name",
+            confirmText: "Merge"
+        });
+        if (!source || !repo.branches[source]) {
+            if (source) toast("Source track not found", "error");
             return;
         }
-
-        const targetFiles = repo.branches[currentBranch].files;
-        const sourceFiles = repo.branches[sourceBranch].files;
-        let conflictsDetected = false;
-
-        for (let fileName in sourceFiles) {
+        if (source === current) {
+            toast("Cannot merge a track into itself", "error");
+            return;
+        }
+        const targetFiles = repo.branches[current].files;
+        const sourceFiles = repo.branches[source].files;
+        let conflicts = 0;
+        for (const fileName of Object.keys(sourceFiles)) {
             if (targetFiles[fileName] && targetFiles[fileName] !== sourceFiles[fileName]) {
-                conflictsDetected = true;
-                // Generate a visual merge-conflict format inside the document
-                targetFiles[fileName] = `<<<<<<< CURRENT TRACK: ${currentBranch}
-${targetFiles[fileName]}
-=======
-${sourceFiles[fileName]}
->>>>>>> INCOMING TRACK: ${sourceBranch}`;
+                conflicts++;
+                targetFiles[fileName] = `<<<<<<< CURRENT (${current})\n${targetFiles[fileName]}\n=======\n${sourceFiles[fileName]}\n>>>>>>> INCOMING (${source})\n`;
             } else if (!targetFiles[fileName]) {
                 targetFiles[fileName] = sourceFiles[fileName];
             }
         }
-
         const mergeCommit = {
-            id: Math.random().toString(16).substr(2, 7),
-            message: `Merged tracking branch logs [${sourceBranch}] into [${currentBranch}]`,
-            timestamp: new Date().toLocaleTimeString(),
+            id: Math.random().toString(16).slice(2, 9),
+            message: `Merged [${source}] into [${current}]${conflicts ? ` (${conflicts} conflict(s))` : ""}`,
+            timestamp: new Date().toLocaleString(),
             filesSnapshot: JSON.parse(JSON.stringify(targetFiles))
         };
-        repo.branches[currentBranch].history.unshift(mergeCommit);
-
-        if(conflictsDetected) {
-            alert("⚠️ TRACK OVERLAP CONFLICTS DETECTED! Overlapping layout lines have been automatically tagged with <<<<<<< and >>>>>>> notations inside your files. Resolve them manually inside the editor workspace interface then commit changes.");
-        } else {
-            alert(`Merger successfully integrated into current operational framework vector tracking parameters.`);
-        }
+        repo.branches[current].history.unshift(mergeCommit);
         saveState();
+        if (conflicts) {
+            toast(`Merge completed with ${conflicts} conflict(s). Resolve markers then commit.`, "warning", 5000);
+        } else {
+            toast("Merge completed cleanly", "success");
+        }
     }
 
     function simulateNetworkAction(action) {
-        const addr = document.getElementById('peerAddress').value.trim();
-        if(!addr) {
-            alert("Please input valid decentralized cluster peer node address protocols configuration maps.");
+        const addr = document.getElementById("peerAddress").value.trim();
+        if (!addr) {
+            toast("Enter a peer address first", "error");
             return;
         }
-        alert(`Connecting decentralization matrix mapping vectors...\n[Action: ${action}]\nSynchronized successfully with decentralized address node layout target: ${addr}`);
+        toast(`${action} synchronized with ${addr}`, "success");
     }
 
-    // LEDGER SYSTEMS ENGINES (VAULT CONTROL SYSTEM)
+    // ---------- Vault ----------
     function exportBackup() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(forgeState, null, 2));
-        const anchor = document.createElement('a');
-        const d = new Date().toISOString().slice(0,10);
-        anchor.setAttribute("href", dataStr);
-        anchor.setAttribute("download", `open_storehouse_ledger_grid_${d}.json`);
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
+        const a = document.createElement("a");
+        a.href = dataStr;
+        a.download = `open_storehouse_ledger_${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        toast("Full ledger exported", "success");
+    }
+
+    function exportCurrentRepoFiles() {
+        const repo = getActiveRepo();
+        if (!repo) return;
+        const bd = getActiveBranchData();
+        const payload = {
+            repo: repo.name,
+            branch: repo.activeBranch,
+            exportedAt: new Date().toISOString(),
+            files: bd.files
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+        const a = document.createElement("a");
+        a.href = dataStr;
+        a.download = `${repo.name}_${repo.activeBranch}_files.json`;
+        a.click();
+        toast("Active repo files exported", "success");
     }
 
     function importBackup(event) {
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = async (e) => {
             try {
                 const parsed = JSON.parse(e.target.result);
-                if (parsed && Array.isArray(parsed.repos)) {
-                    if(confirm("Confirm overwrite sequence? Active environment state maps data configuration tracks will clear.")) {
-                        forgeState = parsed;
-                        const firstRepo = forgeState.repos[0];
-                        if(firstRepo) {
-                            forgeState.activeRepoId = firstRepo.id;
-                            const bData = firstRepo.branches[firstRepo.activeBranch];
-                            selectedFileName = Object.keys(bData.files)[0] || "readme.md";
-                        }
-                        saveState();
-                        alert("Decentralized data array tracking frames re-initialized fully.");
-                    }
+                if (!parsed || !Array.isArray(parsed.repos)) {
+                    toast("Invalid ledger format", "error");
+                    return;
                 }
-            } catch(ex) { alert("Ledger payload parsing processing protocol failure."); }
+                const ok = await showModal({
+                    title: "Import Ledger",
+                    body: "This will overwrite the current local state. Continue?",
+                    confirmText: "Overwrite & Import",
+                    danger: true
+                });
+                if (!ok) return;
+                forgeState = parsed;
+                const first = forgeState.repos[0];
+                if (first) {
+                    forgeState.activeRepoId = first.id;
+                    const bData = first.branches[first.activeBranch];
+                    selectedFileName = Object.keys(bData.files)[0] || "readme.md";
+                }
+                saveState();
+                toast("Ledger restored", "success");
+            } catch (ex) {
+                toast("Failed to parse ledger JSON", "error");
+            }
+            event.target.value = "";
         };
         reader.readAsText(file);
     }
 
-    // RENDER MAPPING LAYOUT ENGINE
+    // ---------- Preview ----------
+    function togglePreview() {
+        showPreview = !showPreview;
+        renderPreviewArea();
+    }
+
+    function renderPreviewArea() {
+        const ta = document.getElementById("fileContent");
+        const pane = document.getElementById("previewPane");
+        const btn = document.getElementById("previewToggle");
+        const isMd = selectedFileName && selectedFileName.toLowerCase().endsWith(".md");
+        btn.style.display = isMd ? "inline-block" : "none";
+        if (showPreview && isMd) {
+            ta.style.display = "none";
+            pane.style.display = "block";
+            renderPreview();
+            btn.textContent = "Edit";
+        } else {
+            ta.style.display = "block";
+            pane.style.display = "none";
+            btn.textContent = "Preview MD";
+            showPreview = false;
+        }
+    }
+
+    function renderPreview() {
+        const raw = document.getElementById("fileContent").value || "";
+        // Minimal safe markdown
+        let html = escapeHtml(raw)
+            .replace(/^### (.*$)/gm, "<h3>$1</h3>")
+            .replace(/^## (.*$)/gm, "<h2>$1</h2>")
+            .replace(/^# (.*$)/gm, "<h1>$1</h1>")
+            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+            .replace(/\*(.*?)\*/g, "<em>$1</em>")
+            .replace(/`([^`]+)`/g, "<code>$1</code>")
+            .replace(/^\- (.*$)/gm, "<li>$1</li>")
+            .replace(/(<li>.*<\/li>)/gs, "<ul>$1</ul>")
+            .replace(/\n\n/g, "</p><p>")
+            .replace(/\n/g, "<br>");
+        document.getElementById("previewPane").innerHTML = `<p>${html}</p>`;
+    }
+
+    // ---------- Help ----------
+    async function showHelp() {
+        await showModal({
+            title: "Keyboard Shortcuts",
+            body: `
+                <div style="font-size:13px; line-height:1.7; text-align:left;">
+                    <span class="kbd">Ctrl</span> + <span class="kbd">S</span> or <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> — Commit<br>
+                    <span class="kbd">Ctrl</span> + <span class="kbd">P</span> — Toggle Markdown preview<br>
+                    <span class="kbd">Ctrl</span> + <span class="kbd">N</span> — New file<br>
+                    <span class="kbd">Esc</span> — Close modal<br>
+                    Dirty files show an orange dot in the tree.
+                </div>
+            `,
+            confirmText: "Got it",
+            cancelText: ""
+        });
+    }
+
+    // ---------- Render ----------
     function render() {
+        // Repo list
+        const repoList = document.getElementById("repoList");
         repoList.innerHTML = "";
         forgeState.repos.forEach(repo => {
             const isActive = repo.id === forgeState.activeRepoId;
-            const item = document.createElement('div');
-            item.className = `repo-item ${isActive ? 'active' : ''}`;
+            const item = document.createElement("div");
+            item.className = `repo-item ${isActive ? "active" : ""}`;
             item.onclick = () => selectRepo(repo.id);
-
-            const activeBranchData = repo.branches[repo.activeBranch] || { history: [], files: {} };
+            const bd = repo.branches[repo.activeBranch] || { history: [], files: {} };
+            const dirtyCount = Object.keys(bd.files || {}).filter(f => {
+                const head = (bd.history[0] && bd.history[0].filesSnapshot) || {};
+                return (bd.files[f] || "") !== (head[f] || "");
+            }).length;
             item.innerHTML = `
-                <div style="font-weight:bold;">${escapeHtml(repo.name)}</div>
+                <div style="font-weight:600;">${escapeHtml(repo.name)}${dirtyCount ? `<span class="badge">${dirtyCount}</span>` : ""}</div>
                 <div class="repo-meta">
-                    Track: <strong>${escapeHtml(repo.activeBranch)}</strong> | 
-                    ${Object.keys(activeBranchData.files).length} docs | 
-                    ${activeBranchData.history.length} snapshots
-                </div>
-            `;
+                    ${escapeHtml(repo.activeBranch)} · ${Object.keys(bd.files).length} files · ${bd.history.length} snapshots
+                </div>`;
             repoList.appendChild(item);
         });
 
         const activeRepo = getActiveRepo();
-        if (activeRepo) {
-            welcomeView.style.display = "none";
-            workspace.style.display = "block";
+        const workspace = document.getElementById("workspace");
+        const welcome = document.getElementById("welcomeView");
 
-            activeRepoTitle.innerText = `⎔ ${activeRepo.name}`;
-            activeRepoDesc.innerText = activeRepo.description;
-
-            // Render Branch Selection Panel Options Maps
-            branchSelect.innerHTML = "";
-            Object.keys(activeRepo.branches).forEach(bName => {
-                const opt = document.createElement('option');
-                opt.value = bName;
-                opt.innerText = bName;
-                if(bName === activeRepo.activeBranch) opt.selected = true;
-                branchSelect.appendChild(opt);
-            });
-
-            const branchData = getActiveBranchData();
-
-            // Render File Structure Directory List Tree Layout Array Map Grid 
-            fileTree.innerHTML = "";
-            Object.keys(branchData.files).forEach(fName => {
-                const isSelected = fName === selectedFileName;
-                const fItem = document.createElement('div');
-                fItem.className = `file-item ${isSelected ? 'active' : ''}`;
-                fItem.onclick = () => { selectedFileName = fName; render(); };
-                fItem.innerHTML = `
-                    <span>📄 ${escapeHtml(fName)}</span>
-                    <span style="color:var(--danger); font-weight:bold; cursor:pointer;" onclick="deleteFileFromRepo('${fName}', event)">×</span>
-                `;
-                fileTree.appendChild(fItem);
-            });
-
-            currentEditingFileName.innerText = `» Editing Component Layer: ${selectedFileName}`;
-            
-            if (document.activeElement !== fileContent) {
-                fileContent.value = branchData.files[selectedFileName] || "";
-            }
-
-            // Render Diff Output Visual Component Layer
-            renderDiff();
-
-            // Render History Timeline Manifest Ledgers
-            commitHistory.innerHTML = "";
-            branchData.history.forEach(commit => {
-                const row = document.createElement('div');
-                row.className = "timeline-item";
-                row.innerHTML = `
-                    <span style="font-family:monospace; background:#21262d; padding:2px 6px; border-radius:4px; color:#ff7b72; font-size:12px;">${commit.id}</span>
-                    <strong>${escapeHtml(commit.message)}</strong>
-                    <span style="font-size:11px; color:var(--text-muted);">— ${commit.timestamp}</span>
-                    <button class="btn-secondary" style="padding:2px 6px; font-size:11px; margin-left:10px;" onclick="checkoutCommitVisual('${commit.id}')">Inspect Layer State</button>
-                `;
-                commitHistory.appendChild(row);
-            });
-
-        } else {
-            welcomeView.style.display = "block";
+        if (!activeRepo) {
             workspace.style.display = "none";
+            welcome.style.display = "block";
+            return;
         }
+
+        welcome.style.display = "none";
+        workspace.style.display = "block";
+        document.getElementById("activeRepoTitle").textContent = `⎔ ${activeRepo.name}`;
+        document.getElementById("activeRepoDesc").textContent = activeRepo.description;
+
+        // Branches
+        const sel = document.getElementById("branchSelect");
+        sel.innerHTML = "";
+        Object.keys(activeRepo.branches).forEach(b => {
+            const opt = document.createElement("option");
+            opt.value = b;
+            opt.textContent = b;
+            if (b === activeRepo.activeBranch) opt.selected = true;
+            sel.appendChild(opt);
+        });
+
+        renderFileTree();
+
+        document.getElementById("currentEditingFileName").textContent = `» ${selectedFileName}`;
+        const ta = document.getElementById("fileContent");
+        if (document.activeElement !== ta) {
+            ta.value = getActiveBranchData().files[selectedFileName] || "";
+        }
+
+        renderDiff();
+        updateDirtyUI();
+        renderPreviewArea();
+
+        // History
+        const hist = document.getElementById("commitHistory");
+        hist.innerHTML = "";
+        const bd = getActiveBranchData();
+        bd.history.forEach((commit, idx) => {
+            const row = document.createElement("div");
+            row.className = "timeline-item";
+            row.innerHTML = `
+                <span style="font-family:monospace; background:#21262d; padding:2px 6px; border-radius:4px; color:#ff7b72; font-size:11px;">${escapeHtml(commit.id)}</span>
+                <strong>${escapeHtml(commit.message)}</strong>
+                <span style="font-size:11px; color:var(--text-muted);"> — ${escapeHtml(commit.timestamp)}</span>
+                <div class="actions">
+                    <button class="btn-secondary btn-sm" onclick="window._inspect('${commit.id}')">Inspect file</button>
+                    <button class="btn-secondary btn-sm" onclick="window._checkout('${commit.id}')">Restore full tree</button>
+                    <button class="btn-secondary btn-sm" onclick="window._branchFrom('${commit.id}')">Branch from here</button>
+                    <button class="btn-secondary btn-sm" onclick="window._revert('${commit.id}')">Revert to this</button>
+                </div>`;
+            hist.appendChild(row);
+        });
     }
 
-    function escapeHtml(str) {
-        if(!str) return "";
-        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
+    // Expose for inline handlers (IIFE scope)
+    window._inspect = inspectCommitFile;
+    window._checkout = checkoutCommitFull;
+    window._branchFrom = createBranchFromCommit;
+    window._revert = revertCommit;
+    window.showNewRepoModal = showNewRepoModal;
+    window.showHelp = showHelp;
+    window.deleteActiveRepo = deleteActiveRepo;
+    window.createNewBranch = createNewBranch;
+    window.switchBranch = switchBranch;
+    window.mergeBranchIntoCurrent = mergeBranchIntoCurrent;
+    window.deleteCurrentBranch = deleteCurrentBranch;
+    window.addNewFileToRepo = addNewFileToRepo;
+    window.addNewFolderPrompt = addNewFolderPrompt;
+    window.togglePreview = togglePreview;
+    window.renameCurrentFile = renameCurrentFile;
+    window.deleteCurrentFile = deleteCurrentFile;
+    window.handleCommit = handleCommit;
+    window.simulateNetworkAction = simulateNetworkAction;
+    window.exportBackup = exportBackup;
+    window.exportCurrentRepoFiles = exportCurrentRepoFiles;
+    window.importBackup = importBackup;
+    window.renderFileTree = renderFileTree;
+    window.onEditorInput = onEditorInput;
 
-    // Boot execution protocol sequences map
+
+    // Keyboard shortcuts
+    document.addEventListener("keydown", (e) => {
+        const mod = e.ctrlKey || e.metaKey;
+        if (mod && (e.key === "s" || e.key === "Enter")) {
+            e.preventDefault();
+            handleCommit();
+        }
+        if (mod && e.key === "p") {
+            e.preventDefault();
+            if (selectedFileName && selectedFileName.toLowerCase().endsWith(".md")) togglePreview();
+        }
+        if (mod && e.key === "n") {
+            e.preventDefault();
+            addNewFileToRepo();
+        }
+    });
+
+    // Boot
+    forgeState = loadState();
+    const repo = getActiveRepo();
+    if (repo) {
+        const bd = getActiveBranchData();
+        selectedFileName = Object.keys(bd.files)[0] || "readme.md";
+    }
     render();
+})();
 </script>
-
 </body>
 </html>
