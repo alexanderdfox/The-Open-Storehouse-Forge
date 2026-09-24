@@ -990,29 +990,44 @@
     <div id="toastContainer"></div>
     <div id="modalRoot"></div>
 
-<script type="module">
-// Real Git in the browser (isomorphic-git + LightningFS)
-// jsDelivr +esm builds — avoids broken source-map 404s from some CDNs
-import LightningFS from "https://cdn.jsdelivr.net/npm/@isomorphic-git/lightning-fs@4.6.0/+esm";
-import git from "https://cdn.jsdelivr.net/npm/isomorphic-git@1.27.1/+esm";
-import http from "https://cdn.jsdelivr.net/npm/isomorphic-git@1.27.1/http/web/+esm";
-
-try {
-    const fs = new LightningFS("storehouse-git-fs");
-    const pfs = fs.promises;
-    window.__git = { git, http, fs, pfs, ready: true };
-    window.dispatchEvent(new Event("git-ready"));
-} catch (err) {
-    console.error("Git engine failed to start", err);
-    window.__git = { ready: false, error: err };
-}
-</script>
 <script>
 (function () {
     "use strict";
 
     const STORAGE_KEY = "storehouse_forge_v5";
     const GIT_DIR_PREFIX = "/repos";
+    // GitHub blocks browser CORS on git smart-HTTP. This public proxy enables clone/push/pull from pages like github.io.
+    const GIT_CORS_PROXY = "https://cors.isomorphic-git.org";
+
+    // Lazy-load Git on first use (avoids CDN modulepreload console noise)
+    let gitLoadPromise = null;
+    async function ensureGit() {
+        if (window.__git && window.__git.ready) return window.__git;
+        if (gitLoadPromise) return gitLoadPromise;
+        setGitStatus("Loading Git engine…");
+        gitLoadPromise = (async () => {
+            const [LightningFSMod, gitMod, httpMod] = await Promise.all([
+                import("https://cdn.jsdelivr.net/npm/@isomorphic-git/lightning-fs@4.6.0/+esm"),
+                import("https://cdn.jsdelivr.net/npm/isomorphic-git@1.27.1/+esm"),
+                import("https://cdn.jsdelivr.net/npm/isomorphic-git@1.27.1/http/web/+esm")
+            ]);
+            const LightningFS = LightningFSMod.default || LightningFSMod;
+            const git = gitMod.default || gitMod;
+            const http = httpMod.default || httpMod;
+            const fs = new LightningFS("storehouse-git-fs");
+            const pfs = fs.promises;
+            window.__git = { git, http, fs, pfs, ready: true };
+            setGitStatus("Git engine ready");
+            return window.__git;
+        })().catch(err => {
+            gitLoadPromise = null;
+            console.error("Git engine failed to load", err);
+            setGitStatus("Git engine failed to load");
+            toast("Git engine failed to load — check network / CDN", "error");
+            throw err;
+        });
+        return gitLoadPromise;
+    }
 
     const seedData = {
         activeRepoId: "1001",
@@ -1632,7 +1647,7 @@ try {
             const ok = await gitCommitCurrent(msg);
             if (ok) {
                 try {
-                    const G = getGit();
+                    const G = await getGit();
                     const log = await G.git.log({ fs: G.fs, dir: repoGitDir(repo), depth: 1 });
                     if (log[0]) commitId = log[0].oid.slice(0, 7);
                 } catch (_) {}
@@ -1782,12 +1797,12 @@ try {
     }
 
     // ---------- Real Git (isomorphic-git) ----------
-    function getGit() {
-        if (!window.__git || !window.__git.ready) {
-            toast("Git engine still loading — try again in a moment", "warning");
+    async function getGit() {
+        try {
+            return await ensureGit();
+        } catch {
             return null;
         }
-        return window.__git;
     }
 
     function repoGitDir(repo) {
@@ -1864,7 +1879,7 @@ try {
     }
 
     async function gitInitCurrent() {
-        const G = getGit();
+        const G = await getGit();
         if (!G) return;
         const repo = getActiveRepo();
         if (!repo) { toast("Select a repository first", "error"); return; }
@@ -1920,7 +1935,7 @@ try {
     }
 
     async function gitCloneRemote() {
-        const G = getGit();
+        const G = await getGit();
         if (!G) return;
         const form = readGitForm();
         if (!form.url) {
@@ -1939,11 +1954,12 @@ try {
             await git.clone({
                 fs, http, dir,
                 url: form.url,
+                corsProxy: GIT_CORS_PROXY,
                 singleBranch: true,
                 depth: 50,
-                onAuth: ({ url, auth }) => {
+                onAuth: () => {
                     if (form.token) return { username: form.token, password: "x-oauth-basic" };
-                    return auth || {};
+                    return {};
                 }
             });
             const files = await readFilesFromFs(pfs, dir);
@@ -2010,7 +2026,7 @@ try {
     }
 
     async function syncForgeToGitFs(repo) {
-        const G = getGit();
+        const G = await getGit();
         if (!G) return null;
         const dir = repoGitDir(repo);
         const bd = getActiveBranchData();
@@ -2019,7 +2035,7 @@ try {
     }
 
     async function gitCommitCurrent(message) {
-        const G = getGit();
+        const G = await getGit();
         if (!G) return false;
         const repo = getActiveRepo();
         if (!repo || !repo.gitLinked) return false;
@@ -2054,7 +2070,7 @@ try {
     }
 
     async function gitPushRemote() {
-        const G = getGit();
+        const G = await getGit();
         if (!G) return;
         const repo = getActiveRepo();
         if (!repo) { toast("Select a repository", "error"); return; }
@@ -2084,6 +2100,7 @@ try {
             await git.push({
                 fs, http, dir,
                 remote: "origin",
+                corsProxy: GIT_CORS_PROXY,
                 onAuth: () => {
                     if (form.token) return { username: form.token, password: "x-oauth-basic" };
                     return {};
@@ -2101,7 +2118,7 @@ try {
     }
 
     async function gitPullRemote() {
-        const G = getGit();
+        const G = await getGit();
         if (!G) return;
         const repo = getActiveRepo();
         if (!repo) { toast("Select a repository", "error"); return; }
@@ -2123,6 +2140,7 @@ try {
             await git.pull({
                 fs, http, dir,
                 remote: "origin",
+                corsProxy: GIT_CORS_PROXY,
                 author: { name: form.name, email: form.email },
                 onAuth: () => {
                     if (form.token) return { username: form.token, password: "x-oauth-basic" };
@@ -2155,7 +2173,7 @@ try {
     }
 
     async function gitStatusRemote() {
-        const G = getGit();
+        const G = await getGit();
         if (!G) return;
         const repo = getActiveRepo();
         if (!repo) { toast("Select a repository", "error"); return; }
@@ -2480,11 +2498,10 @@ try {
         if (saved.name) document.getElementById("gitAuthorName").value = saved.name;
         if (saved.email) document.getElementById("gitAuthorEmail").value = saved.email;
     } catch (_) {}
-    if (window.__git && window.__git.ready) setGitStatus("Git engine ready");
-    else window.addEventListener("git-ready", () => setGitStatus("Git engine ready"), { once: true });
     render();
 })();
 </script>
 </body>
 </html>
+
 
